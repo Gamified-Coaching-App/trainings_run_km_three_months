@@ -3,8 +3,8 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
 // Create a DynamoDB client
-const ddb_client = new DynamoDBClient({ region: 'eu-west-2' }); // Replace with your DynamoDB region
-const table_name = 'trainings_aggregates'; 
+const ddb_client = new DynamoDBClient({ region: 'eu-west-2' });
+const table_name = 'trainings_aggregates';
 
 export const handler = async (event) => {
     // Parse the set of user IDs from the POST request body
@@ -20,8 +20,12 @@ export const handler = async (event) => {
     for (const user_id of user_ids) {
         const user_activity_key = `${user_id}#RUNNING`;
         const params = {
-            TableName: table_name, // Replace with your table name
-            KeyConditionExpression: 'user_id#activity_type = :uact and year#week BETWEEN :start and :end',
+            TableName: table_name,
+            KeyConditionExpression: '#uact = :uact and #yweek BETWEEN :start and :end',
+            ExpressionAttributeNames: {
+                '#uact': 'user_id#activity_type',
+                '#yweek': 'year#week'
+            },
             ExpressionAttributeValues: {
                 ':uact': user_activity_key,
                 ':start': twelve_weeks_ago_year_week,
@@ -33,7 +37,7 @@ export const handler = async (event) => {
             // Query DynamoDB for the given user ID
             const { Items } = await ddb_client.send(new QueryCommand(params));
             // Sum the kilometers
-            const total_km = Items.reduce((acc, item) => acc + parseFloat(item.km.N || 0), 0);
+            const total_km = Items.reduce((acc, item) => acc + parseFloat(item.km || 0), 0);
             // Store the result
             results[user_id] = total_km;
         } catch (err) {
