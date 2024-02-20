@@ -3,7 +3,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
 // Create a DynamoDB client
-const ddb_client = new DynamoDBClient({ region: 'your-region' }); // Replace with your DynamoDB region
+const ddb_client = new DynamoDBClient({ region: 'eu-west-2' }); // Replace with your DynamoDB region
 const table_name = 'trainings_aggregates'; 
 
 export const handler = async (event) => {
